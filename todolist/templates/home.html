@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Todo Lists</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #6A11CB, #FC4A1A);
+    padding: 32px 16px;
+}
+
+/* TITLE */
+h1 {
+    color: #ffffff;
+    margin-bottom: 20px;
+}
+
+/* WRAPPER */
+.wrapper {
+    max-width: 1200px;
+    margin: auto;
+}
+
+/* COMMON BUTTONS */
+.btn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.btn-orange {
+    background: #FC4A1A;
+    color: white;
+}
+
+.btn-orange:hover {
+    background: #FF6A3D;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(252,74,26,0.45);
+}
+
+.btn-save {
+    background: #22C55E;
+    color: white;
+}
+
+.btn-save:hover {
+    background: #16A34A;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(34,197,94,0.45);
+}
+
+.btn-cancel {
+    background: #7C3AED;
+    color: #ffffff;
+    border: none;
+}
+
+.btn-cancel:hover {
+    background: #8B5CF6;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(124,58,237,0.45);
+}
+
+
+/* ADD LIST */
+.add-box {
+    display: flex;
+    gap: 12px;
+    padding: 18px;
+    border-radius: 18px;
+    background: rgba(31,41,51,0.75);
+    backdrop-filter: blur(10px);
+    margin-bottom: 22px;
+}
+
+.add-box input {
+    flex: 1;
+    padding: 14px;
+    border-radius: 12px;
+    background: rgba(17,17,17,0.85);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.15);
+}
+
+/* LIST CARD */
+.list-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    margin-bottom: 16px;
+    border-radius: 18px;
+    background: rgba(31,41,51,0.75);
+    backdrop-filter: blur(8px);
+    transition: all 0.25s ease;
+}
+
+.list-card:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-2px);
+}
+
+.list-name {
+    color: #F9FAFB;
+    font-size: 18px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.edit-input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(17,17,17,0.85);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* MOBILE */
+@media (max-width: 600px) {
+    .list-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .actions {
+        align-self: flex-end;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<h1>My Todo Lists</h1>
+
+<!-- ADD LIST -->
+<div class="add-box">
+    <form method="post" style="display:flex; gap:12px; width:100%;">
+        {% csrf_token %}
+        <input type="text" name="list_name" placeholder="New list name" required>
+        <button class="btn btn-orange">Add</button>
+    </form>
+</div>
+
+{% for list in lists %}
+<div class="list-card">
+
+{% if edit_list_id == list.id|stringformat:"s" %}
+<form method="post" style="display:flex; gap:10px; width:100%;">
+    {% csrf_token %}
+    <input class="edit-input" type="text" name="new_name" value="{{ list.name }}" required>
+    <button class="btn btn-save" name="update_list" value="{{ list.id }}">Save</button>
+    <a href="{% url 'home' %}" class="btn btn-cancel">Cancel</a>
+</form>
+{% else %}
+<a class="list-name" href="{% url 'todo-detail' list.id %}">
+    {{ list.name }}
+</a>
+
+<div class="actions">
+    <a href="?edit={{ list.id }}" class="btn btn-orange">Update</a>
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-orange" name="delete_list" value="{{ list.id }}">Delete</button>
+    </form>
+</div>
+{% endif %}
+
+</div>
+{% endfor %}
+
+</div>
+
+</body>
+</html>

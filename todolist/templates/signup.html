@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign Up</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #6A11CB, #FC4A1A);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+}
+
+/* CARD */
+.card {
+    background: #1F2933;
+    width: 100%;
+    max-width: 380px;
+    padding: 32px;
+    border-radius: 18px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+}
+
+/* TITLE */
+h2 {
+    text-align: center;
+    color: #F9FAFB;
+    margin-bottom: 24px;
+}
+
+/* LABEL */
+label {
+    display: block;
+    margin-bottom: 6px;
+    color: #CBD5E1;
+    font-weight: bold;
+}
+
+/* INPUTS – SAME FOR ALL */
+input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    border: 1px solid #374151;
+    background: #E5F0FF;   /* white input */
+    color: #111827;
+    font-size: 15px;
+}
+
+input:focus {
+    outline: none;
+    border-color: #FC4A1A;
+}
+
+/* BUTTON */
+button {
+    width: 100%;
+    padding: 14px;
+    background: #FC4A1A;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #FF6A3D;
+}
+
+/* LINKS */
+.link {
+    text-align: center;
+    margin-top: 18px;
+    color: #CBD5E1;
+}
+
+.link a {
+    color: #A78BFA;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+/* MESSAGES */
+ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 16px;
+}
+
+li {
+    background: #7C2D12;
+    color: #FED7AA;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h2>Sign Up</h2>
+
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <label>Username</label>
+        <input type="text" name="username" required>
+
+        <label>Email</label>
+        <input type="email" name="email" required>
+
+        <label>Password</label>
+        <input type="password" name="password" required>
+
+        <button>Signup</button>
+    </form>
+
+    <div class="link">
+        Already have an account? <a href="{% url 'login' %}">Login</a>
+    </div>
+</div>
+
+</body>
+</html>
