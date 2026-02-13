@@ -33,7 +33,7 @@ def signup_view(request):
                     message,
                     settings.EMAIL_HOST_USER,
                     [email], # Send to the email the user just typed in
-                    fail_silently=False,
+                    fail_silently=True,
                 )
             except Exception as e:
                 # Log the error but don't stop the user from signing up
