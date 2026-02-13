@@ -4,50 +4,80 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import LoginUser,SignupUser,TodoList, TodoItem
 
+
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.conf import settings
+
+
+def signup_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        # 1. Create the user
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already taken")
+        else:
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.save()
+
+            # 2. Send the Welcome Email
+            subject = "Welcome to Our Website!"
+            message = f"Hi {username}, thanks for signing up. We're glad to have you!"
+            
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.EMAIL_HOST_USER,
+                    [email], # Send to the email the user just typed in
+                    fail_silently=False,
+                )
+            except Exception as e:
+                # Log the error but don't stop the user from signing up
+                print(f"Mail error: {e}")
+
+            messages.success(request, "Account created! Check your email.")
+            return redirect('login') 
+
+    return render(request, "signup.html")
+
+
+from django.contrib.auth import authenticate, login
+
 def login_view(request):
     if request.method == "POST":
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        user = None
+        # This checks the built-in User model and verifies the hashed password
+        user = authenticate(request, username=username, password=password)
 
-        try:
-            user = SignupUser.objects.get(username=username, is_active = True)
-        except SignupUser.DoesNotExist:
+        if user is not None:
+            login(request, user) # Creates the session
+            
+            # --- Send Login Email ---
             try:
-                user = LoginUser.objects.get(username=username, is_active = True)
-            except LoginUser.DoesNotExist:
-                user = None
+                send_mail(
+                    "New Login Alert",
+                    f"Hi {user.username}, you just logged in to your account.",
+                    settings.EMAIL_HOST_USER,
+                    [user.email],
+                    fail_silently=True,
+                )
+            except Exception as e:
+                print(f"Login mail error: {e}")
+            # ------------------------
+
+            messages.success(request, f"Welcome, {username}")
+            return redirect("home")
         else:
-            if user and user.check_password(password):
-                messages.success(request, f"Welcome, {username}")
-                return redirect("home")
-            messages.error(request, "Invalid username or password")       
-    return render(request, "login.html")
-
-
-def signup_view(request):
-    if request.method == "POST":
-        username = request.POST.get('username')
-        email = request.POST.get("email")
-        password = request.POST.get('password')
-
-
-        if not username or not email or not password:
-            messages.error(request, "All fields are required.")
-        elif SignupUser.objects.filter(username = username).exists():
-            messages.error(request, "Username already taken")
-        elif SignupUser.objects.filter(email = email).exists():
-            messages.error(request, "Email already registered.")        
-        else:
-            new_user = SignupUser(username = username, email = email)
-            new_user.set_password(password)
-            new_user.save()
-            messages.success(request, "Signup successful. you can now log in")
-            return redirect("login")
+            # If authenticate returns None, the credentials were wrong
+            messages.error(request, "Invalid username or password")
         
-    return render(request, "signup.html")
-
+    return render(request, "login.html")
 
 
 from django.shortcuts import render, redirect
