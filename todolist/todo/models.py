@@ -102,12 +102,13 @@ class TodoList(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["user", "name"],
-                name="unique_todolist_per_user"
-            )
-        ]
+        # constraints = [
+        #     models.UniqueConstraint(
+        #         fields=["user", "name"],
+        #         name="unique_todolist_per_user"
+        #     )
+        # ]
+        pass
 
     def __str__(self):
         return f"{self.name} ({self.user.username})"
@@ -123,12 +124,13 @@ class TodoItem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["todo_list", "title"],
-                name="unique_item_per_list"
-            )
-        ]
-
+        # constraints = [
+        #     models.UniqueConstraint(
+        #         fields=["todo_list", "title"],
+        #         name="unique_item_per_list"
+        #     )
+        # ]
+        pass
+    
     def __str__(self):
         return self.title
