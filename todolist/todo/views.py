@@ -50,82 +50,110 @@ def signup_view(request):
 
 
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
-from .models import TodoList
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.mail import send_mail
+from django.conf import settings
 
+from .models import TodoList, TodoItem
 
-class HomeView(View):
+class HomeView(LoginRequiredMixin, View):
+    login_url = "login"
 
     def get(self, request):
-        lists = TodoList.objects.all()
-        edit_list_id = request.GET.get("edit")  # for update mode
+        lists = TodoList.objects.filter(user=request.user)
+        edit_list_id = request.GET.get("edit")
 
         return render(
             request,
-            'home.html',
+            "home.html",
             {
-                'lists': lists,
-                'edit_list_id': edit_list_id
+                "lists": lists,
+                "edit_list_id": edit_list_id
             }
         )
 
     def post(self, request):
 
-        # ADD TODO LIST
-        if 'list_name' in request.POST:
-            list_name = request.POST.get('list_name', '').strip()
+        if "list_name" in request.POST:
+            name = request.POST.get("list_name").strip()
+            if name:
+                TodoList.objects.create(
+                    name=name,
+                    user=request.user
+                )
 
-            if list_name and not TodoList.objects.filter(name__iexact=list_name).exists():
-                TodoList.objects.create(name=list_name)
-
-        # DELETE TODO LIST
-        elif 'delete_list' in request.POST:
+        elif "delete_list" in request.POST:
             TodoList.objects.filter(
-                id=request.POST.get('delete_list')
+                id=request.POST.get("delete_list"),
+                user=request.user
             ).delete()
 
-        # UPDATE TODO LIST (SAVE)
-        elif 'update_list' in request.POST:
-            list_id = request.POST.get('update_list')
-            new_name = request.POST.get('new_name', '').strip()
+        elif "update_list" in request.POST:
+            list_id = request.POST.get("update_list")
+            new_name = request.POST.get("new_name").strip()
 
             if new_name:
-                TodoList.objects.filter(id=list_id).update(name=new_name)
+                TodoList.objects.filter(
+                    id=list_id,
+                    user=request.user
+                ).update(name=new_name)
 
-        return redirect('home')
+        return redirect("home")
 
-
-
-    
-class TodoDetailView(View):
+class TodoDetailView(LoginRequiredMixin, View):
+    login_url = "login"
 
     def get(self, request, pk):
-        todo_list = get_object_or_404(TodoList, id=pk)
-        edit_item_id = request.GET.get('edit')
+        todo_list = get_object_or_404(
+            TodoList,
+            id=pk,
+            user=request.user
+        )
+        edit_item_id = request.GET.get("edit")
 
-        return render(request,'todo_detail.html',{'list': todo_list,'edit_item_id': edit_item_id})
+        return render(
+            request,
+            "todo_detail.html",
+            {
+                "list": todo_list,
+                "edit_item_id": edit_item_id
+            }
+        )
 
     def post(self, request, pk):
-        todo_list = get_object_or_404(TodoList, id=pk)
+        todo_list = get_object_or_404(
+            TodoList,
+            id=pk,
+            user=request.user
+        )
 
-        # ADD TODO ITEM
-        if 'item_title' in request.POST:
-            title = request.POST.get('item_title', '').strip()
+        if "item_title" in request.POST:
+            title = request.POST.get("item_title").strip()
+            if title:
+                TodoItem.objects.create(
+                    title=title,
+                    todo_list=todo_list
+                )
 
-            if title and not TodoItem.objects.filter(todo_list=todo_list,title__iexact=title).exists():
-                TodoItem.objects.create(title=title,todo_list=todo_list)
+        elif "delete_item" in request.POST:
+            TodoItem.objects.filter(
+                id=request.POST.get("delete_item"),
+                todo_list=todo_list
+            ).delete()
 
-        # DELETE TODO ITEM
-        elif 'delete_item' in request.POST:
-            TodoItem.objects.filter(id=request.POST.get('delete_item')).delete()
+        elif "update_item" in request.POST:
+            item_id = request.POST.get("update_item")
+            new_title = request.POST.get("new_title").strip()
 
-        # UPDATE TODO ITEM
-        elif 'update_item' in request.POST:
-            item_id = request.POST.get('update_item')
-            new_title = request.POST.get('new_title', '').strip()
+            if new_title:
+                TodoItem.objects.filter(
+                    id=item_id,
+                    todo_list=todo_list
+                ).update(title=new_title)
 
-            if new_title and not TodoItem.objects.filter(todo_list=todo_list,title__iexact=new_title).exclude(id=item_id).exists():
-                TodoItem.objects.filter(id=item_id).update(title=new_title)
-
-        return redirect('todo-detail', pk=pk)
+        return redirect("todo-detail", pk=pk)

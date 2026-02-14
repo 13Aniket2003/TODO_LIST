@@ -151,6 +151,18 @@ h1 {
 <div class="wrapper">
 
 <h1>My Todo Lists</h1>
+<form action="{% url 'logout' %}" method="post" style="position: absolute;top: 24px;right: 40px;">
+    {% csrf_token %}
+    <button type="submit"
+            class="btn btn-orange"
+            style="
+                padding: 10px 18px;   
+                font-size: 14px;     
+                border-radius: 12px; 
+            ">
+        Logout
+    </button>
+</form>
 
 <!-- ADD LIST -->
 <div class="add-box">
