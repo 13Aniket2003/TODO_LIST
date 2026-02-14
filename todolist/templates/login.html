@@ -89,8 +89,16 @@ button:hover {
 <div class="card">
     <h2>Login</h2>
 
+    {% if messages %}
+        {% for message in messages %}
+            <p style="color:#FED7AA; text-align:center;">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
     <form method="post">
         {% csrf_token %}
+        <!-- 🔑 REQUIRED FOR REDIRECT FIX -->
+        <input type="hidden" name="next" value="{{ next }}">
 
         <label>Username</label>
         <input type="text" name="username" required>
@@ -98,7 +106,7 @@ button:hover {
         <label>Password</label>
         <input type="password" name="password" required>
 
-        <button>Login</button>
+        <button type="submit">Login</button>
     </form>
 
     <div class="link">

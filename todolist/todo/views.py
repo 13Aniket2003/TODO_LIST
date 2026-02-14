@@ -4,49 +4,53 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import LoginUser,SignupUser,TodoList, TodoItem
 
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
 def login_view(request):
+    next_url = request.GET.get("next") or request.POST.get("next")
+
     if request.method == "POST":
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        username = request.POST.get("username")
+        password = request.POST.get("password")
 
-        user = None
+        user = authenticate(request, username=username, password=password)
 
-        try:
-            user = SignupUser.objects.get(username=username, is_active = True)
-        except SignupUser.DoesNotExist:
-            try:
-                user = LoginUser.objects.get(username=username, is_active = True)
-            except LoginUser.DoesNotExist:
-                user = None
+        if user is not None:
+            login(request, user)   # 🔥 CREATES SESSION
+            return redirect(next_url or "home")
         else:
-            if user and user.check_password(password):
-                messages.success(request, f"Welcome, {username}")
-                return redirect("home")
-            messages.error(request, "Invalid username or password")       
-    return render(request, "login.html")
+            messages.error(request, "Invalid username or password")
 
+    return render(request, "login.html", {"next": next_url})
+
+from django.contrib.auth.models import User
 
 def signup_view(request):
     if request.method == "POST":
-        username = request.POST.get('username')
+        username = request.POST.get("username")
         email = request.POST.get("email")
-        password = request.POST.get('password')
+        password = request.POST.get("password")
 
-
-        if not username or not email or not password:
-            messages.error(request, "All fields are required.")
-        elif SignupUser.objects.filter(username = username).exists():
+        if User.objects.filter(username=username).exists():
             messages.error(request, "Username already taken")
-        elif SignupUser.objects.filter(email = email).exists():
-            messages.error(request, "Email already registered.")        
         else:
-            new_user = SignupUser(username = username, email = email)
-            new_user.set_password(password)
-            new_user.save()
-            messages.success(request, "Signup successful. you can now log in")
+            User.objects.create_user(
+                username=username,
+                email=email,
+                password=password
+            )
+            messages.success(request, "Signup successful. Please login.")
             return redirect("login")
-        
+
     return render(request, "signup.html")
+
+from django.contrib.auth import logout
+
+def logout_view(request):
+    logout(request)
+    return redirect("login")
 
 
 

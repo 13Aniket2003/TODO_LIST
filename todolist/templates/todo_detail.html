@@ -15,214 +15,33 @@ body {
     padding: 32px 16px;
 }
 
-/* LIST TITLE (CENTER ONLY THIS) */
 h1 {
-    color: #ffffff;
+    color: white;
     text-align: center;
-    margin-bottom: 10px;
-    font-size: 32px;
 }
 
-/* BACK BUTTON (LEFT, NOT CENTERED) */
 .back-btn {
     display: inline-block;
     margin-bottom: 20px;
     padding: 10px 18px;
-    border-radius: 12px;
     background: #FC4A1A;
     color: white;
-    font-weight: bold;
     text-decoration: none;
-    transition: all 0.25s ease;
-}
-
-.back-btn:hover {
-    background: #FF6A3D;
-    transform: translateY(-2px);
-}
-
-/* WRAPPER */
-.wrapper {
-    max-width: 1200px;
-    margin: auto;
-}
-
-/* COMMON BUTTONS */
-.btn {
-    padding: 10px 16px;
     border-radius: 10px;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    transition: all 0.25s ease;
-}
-
-.btn-orange {
-    background: #FC4A1A;
-    color: white;
-}
-
-.btn-orange:hover {
-    background: #FF6A3D;
-    transform: translateY(-2px);
-}
-
-.btn-save {
-    background: #22C55E;
-    color: white;
-}
-
-.btn-save:hover {
-    background: #16A34A;
-    transform: translateY(-2px);
-}
-
-.btn-cancel {
-    background: #7C3AED;
-    color: #ffffff;
-    border: none;
-}
-
-.btn-cancel:hover {
-    background: #8B5CF6;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(124,58,237,0.45);
-}
-
-
-/* ADD TASK */
-.add-box {
-    display: flex;
-    gap: 12px;
-    padding: 18px;
-    border-radius: 18px;
-    background: rgba(31,41,51,0.75);
-    backdrop-filter: blur(10px);
-    margin-bottom: 22px;
-}
-
-.add-box input {
-    flex: 1;
-    padding: 14px;
-    border-radius: 12px;
-    background: rgba(17,17,17,0.85);
-    color: white;
-    border: 1px solid rgba(255,255,255,0.15);
-}
-
-/* TASK CARD */
-.task-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    margin-bottom: 16px;
-    border-radius: 18px;
-    background: rgba(31,41,51,0.75);
-    transition: all 0.25s ease;
-}
-
-.task-card:hover {
-    background: rgba(255,255,255,0.08);
-    transform: translateY(-2px);
-}
-
-.task-title {
-    color: #F9FAFB;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.task-time {
-    font-size: 12px;
-    color: #CBD5E1;
-}
-
-.actions {
-    display: flex;
-    gap: 8px;
-}
-
-.edit-input {
-    flex: 1;
-    padding: 12px;
-    border-radius: 10px;
-    background: rgba(17,17,17,0.85);
-    color: white;
-    border: 1px solid rgba(255,255,255,0.2);
-}
-
-/* MOBILE */
-@media (max-width: 600px) {
-    h1 {
-        font-size: 24px;
-    }
-
-    .task-card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
-    .actions {
-        align-self: flex-end;
-    }
 }
 </style>
 </head>
 
 <body>
 
-<div class="wrapper">
+<h1>{{ list.name }}</h1>
+<a href="{% url 'home' %}" class="back-btn">← Back</a>
 
-    <!-- ONLY TITLE CENTERED -->
-    <h1>{{ list.name }}</h1>
-
-    <!-- BACK BUTTON NORMAL -->
-    <a href="{% url 'home' %}" class="back-btn">← Back</a>
-
-    <!-- ADD TASK -->
-    <div class="add-box">
-        <form method="post" style="display:flex; gap:12px; width:100%;">
-            {% csrf_token %}
-            <input type="text" name="item_title" placeholder="New task" required>
-            <button class="btn btn-orange">Add</button>
-        </form>
-    </div>
-
-    {% for item in list.items.all %}
-    <div class="task-card">
-
-        {% if edit_item_id == item.id|stringformat:"s" %}
-        <form method="post" style="display:flex; gap:10px; width:100%;">
-            {% csrf_token %}
-            <input class="edit-input" type="text" name="new_title" value="{{ item.title }}" required>
-            <button class="btn btn-save" name="update_item" value="{{ item.id }}">Save</button>
-            <a href="{% url 'todo-detail' list.id %}" class="btn btn-cancel">Cancel</a>
-        </form>
-        {% else %}
-        <div>
-            <div class="task-title">{{ item.title }}</div>
-            <div class="task-time">
-                {{ item.created_at|date:"d M Y, H:i" }}
-            </div>
-        </div>
-
-        <div class="actions">
-            <a href="?edit={{ item.id }}" class="btn btn-orange">Update</a>
-            <form method="post">
-                {% csrf_token %}
-                <button class="btn btn-orange" name="delete_item" value="{{ item.id }}">Delete</button>
-            </form>
-        </div>
-        {% endif %}
-
-    </div>
-    {% empty %}
-        <p style="color:white; text-align:center;">No tasks added yet.</p>
-    {% endfor %}
-
-</div>
+{% for item in list.items.all %}
+<p style="color:white;">• {{ item.title }}</p>
+{% empty %}
+<p style="color:white;">No tasks yet.</p>
+{% endfor %}
 
 </body>
 </html>
