@@ -2,28 +2,68 @@ from django.template import loader
 from django.views import View
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import LoginUser,SignupUser,TodoList, TodoItem
+from .models import TodoList, TodoItem   #LoginUser,SignupUser,
 
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 from django.contrib import messages
 
-def login_view(request):
-    next_url = request.GET.get("next") or request.POST.get("next")
+# def login_view(request):
+#     next_url = request.GET.get("next") or request.POST.get("next")
 
+#     if request.method == "POST":
+#         username = request.POST.get("username")
+#         password = request.POST.get("password")
+
+#         user = authenticate(request, username=username, password=password)
+
+#         if user is not None:
+#             login(request, user)   # 🔥 CREATES SESSION
+#             return redirect(next_url or "home")
+#         else:
+#             messages.error(request, "Invalid username or password")
+
+#     return render(request, "login.html", {"next": next_url})
+
+# from django.contrib.auth.models import User
+
+# def signup_view(request):
+#     if request.method == "POST":
+#         username = request.POST.get("username")
+#         email = request.POST.get("email")
+#         password = request.POST.get("password")
+
+#         if User.objects.filter(username=username).exists():
+#             messages.error(request, "Username already taken")
+#         else:
+#             User.objects.create_user(
+#                 username=username,
+#                 email=email,
+#                 password=password
+#             )
+#             messages.success(request, "Signup successful. Please login.")
+#             return redirect("login")
+
+#     return render(request, "signup.html")
+
+from django.contrib.auth import authenticate, login
+
+def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
 
         user = authenticate(request, username=username, password=password)
 
-        if user is not None:
-            login(request, user)   # 🔥 CREATES SESSION
-            return redirect(next_url or "home")
+        if user:
+            login(request, user)
+            return redirect("home")
         else:
             messages.error(request, "Invalid username or password")
 
-    return render(request, "login.html", {"next": next_url})
+    return render(request, "login.html")
+
+
 
 from django.contrib.auth.models import User
 
@@ -34,17 +74,19 @@ def signup_view(request):
         password = request.POST.get("password")
 
         if User.objects.filter(username=username).exists():
-            messages.error(request, "Username already taken")
+            messages.error(request, "Username already exists")
         else:
             User.objects.create_user(
                 username=username,
                 email=email,
                 password=password
             )
-            messages.success(request, "Signup successful. Please login.")
+            messages.success(request, "Account created. Please login.")
             return redirect("login")
 
     return render(request, "signup.html")
+
+
 
 from django.contrib.auth import logout
 
