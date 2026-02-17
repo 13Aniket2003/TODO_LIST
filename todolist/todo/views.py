@@ -221,6 +221,8 @@ from django.db import IntegrityError
 from .models import TodoList, TodoItem
 
 
+from .utils import send_email
+
 def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username")
@@ -230,12 +232,22 @@ def login_view(request):
 
         if user:
             login(request, user)
+
+            # ✅ SEND LOGIN ALERT EMAIL
+            send_email(
+                user.email,
+                "Login Alert",
+                f"Hi {user.username}, you logged in successfully."
+            )
+
             return redirect("home")
         else:
             messages.error(request, "Invalid username or password")
 
     return render(request, "login.html")
 
+
+from .utils import send_email
 
 def signup_view(request):
     if request.method == "POST":
@@ -246,16 +258,23 @@ def signup_view(request):
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username already exists")
         else:
-            User.objects.create_user(
+            user = User.objects.create_user(
                 username=username,
                 email=email,
                 password=password
             )
+
+            # ✅ SEND SIGNUP EMAIL (NON-BLOCKING)
+            send_email(
+                email,
+                "Welcome to Todo App",
+                f"Hi {username}, your account has been created successfully."
+            )
+
             messages.success(request, "Account created. Please login.")
             return redirect("login")
 
     return render(request, "signup.html")
-
 
 def logout_view(request):
     logout(request)
